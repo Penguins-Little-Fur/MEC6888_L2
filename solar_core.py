@@ -1,32 +1,36 @@
 import numpy as np
 import datetime
 
-def cal_core(hour,min,p=False):
+def cal_core(hour,min,month,day,LSTM,longtitude,latitude,
+             tilt=0,south_angle=0,elevation=0.0,A=0.0,B=0.0,C=0.0,rho=0.0,p=False,p_s=False,name=""):
     ###################################################
     ### mannual edit
     ###################################################
 
-    month = 2
-    day = 21
+    month = month
+    day = day
+    # LST = datetime.datetime(2000, 1, 1, hour, min, 0)
     LST = datetime.datetime(2000, 1, 1, hour, min, 0)
     # 时区 注意正负
-    LSTM = 15 * (5)
-    longitude = 71.06
-    latitude = 42.36
+    LSTM = LSTM
+    longitude = longtitude
+    latitude = latitude
+
+    # ---------------------------------------------------
     # tilt angle 倾斜角 单位：度
-    beta_2 = 60
+    beta_2 = tilt
     # 朝向正南方 为0（与正南方向夹角） 单位：度
-    alpha_2 = 0
+    alpha_2 = south_angle
     # 海拔 单位km
-    elevation = 0.043
+    elevation = elevation
     # 辐射系数 A,B,C
     # A unit W/m2
-    A = 1215
-    B = 0.144
-    C = 0.060
+    A = A
+    B = B
+    C = C
     # reflectivity
     # 植物 草 0.2 水泥 0.3 雪 0.8 碎石 0.15
-    rho = 0.2
+    rho = rho
 
     ###################################################
 
@@ -51,10 +55,15 @@ def cal_core(hour,min,p=False):
     ### 注意正负
     AST = LST.hour * 60 + LST.minute + 4 * (LSTM - longitude) + ET
 
-    if p:
-        print("N:{},"
-              "declination angle:\t\t{:.2f}°,\n"
-              "D(有时候叫做B):\t\t\t\t{:.2f}°,\n"
+    if name != "" and (p or p_s):
+        print("----------------------------------------")
+        print(name)
+        print("----------------------------------------")
+
+    if p or p_s:
+        print("N:{}\n,"
+              "declination angle:\t\t\t{:.2f}°,\n"
+              "D(sometimes B):\t\t\t\t{:.2f}°,\n"
               "equation of time:\t\t\t{:.2f}min,\n"
               "apparent solar time:\t\t{:.1f}min,\n"
               .format(total_days, delta, D, ET, AST))
@@ -118,16 +127,35 @@ def cal_core(hour,min,p=False):
               "I_D:\t\t\t{:.1f}W/m2,\n"
               "I_S:\t\t\t{:.2f}W/m2,\n"
               "I_R:\t\t\t{:.2f}W/m2,\n"
-              "I_tot:\t\t\t{:.1f}W/m2,\n"
+              "I_tot:\t\t\t{:.1f}W/m2"
               .format(pressure_ratio, I_DN, I_D, I_S, I_R, I_tot))
+
+    if name != "" and (p or p_s):
+        print("----------------------------------------")
 
     return I_tot
 
 if __name__ == '__main__':
-    result = cal_core(14,0)
-    print(result)
+    result = cal_core(
+        month =1,
+        day=21,
+        hour=6,
+        min=40,
+        LSTM=15*5,
+        latitude=42+36/60,  # 纬度 NS
+        longtitude=71+6/60,     # 经度 WE
+        tilt=60,
+        south_angle=0,
+        elevation=0.043,
+        A=1230,
+        B=0.142,
+        C=0.058,
+        rho=0.2,
+        p=True
+    )
 
 ###
 # author: Bernsieg Chan
 # date: 9/8/2021
-# version: 3.0
+# version: 4.0
+# time zone refer page: http://www.timeofdate.com/city/United%20States
